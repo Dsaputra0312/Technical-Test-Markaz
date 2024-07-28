@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Triangle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #444;
+            margin-bottom: 20px;
+        }
+        label, input, button {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px;
+            background-color: #5c7cfa;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4a5fda;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-family: monospace;
+            line-height: 1.5;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <h1>Create Triangle</h1>
+    <label for="jumlah">Masukkan Angka</label>
+    <input type="number" id="jumlah">
+    <button onclick="getvalue()">Create Triangle</button>
+    <div id="result"></div>
+
+    <script>
+        function getvalue() {
+            const x = parseInt(document.getElementById("jumlah").value);
+            x < 0 || x > 100 
+                ? alert('Batas Input 0 - 100!')
+                : createTriangle(x);
+        }
+        function createTriangle(x) {
+            let html = '';
+            for (let y = 1; y <= x; y++) {
+                const underscore = '_'.repeat(x - y);
+                const spasi = ' '.repeat(x - y);
+                const pagar = '#'.repeat(y);
+                html += underscore + pagar + '<br>';
+                console.log(spasi + pagar);
+            }
+            document.getElementById("result").innerHTML = html;
+        }
+    </script>
+</body>
+</html>

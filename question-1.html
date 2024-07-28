@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Lempar Dadu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #5c7cfa;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #4a5fda;
+        }
+        .content {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        #result {
+            flex: 2;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 20px;
+        }
+        #winner {
+            flex: 1;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-width: 300px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+        .round {
+            margin-top: 20px;
+        }
+        .round > div {
+            margin-bottom: 20px;
+        }
+        .round b {
+            color: #007bff;
+        }
+        .separator {
+            margin: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Lempar Dadu</h1>
+    <label for="pemain">Jumlah Pemain</label>
+    <input type="number" id="pemain">
+
+    <label for="dadu">Jumlah Dadu</label>
+    <input type="number" id="dadu">
+
+    <button onclick="start()">Main!</button>
+
+    <div class="content">
+        <div id="result"></div>
+        <div id="winner">
+            <h2>Pemenang</h2>
+            <p id="result-pemenang"></p>
+        </div>
+    </div>
+    <script>
+        let data = [];
+        function start() {
+            data = [];
+            const pemain = parseInt(document.getElementById('pemain').value);
+            const dadu = parseInt(document.getElementById('dadu').value);
+
+            for (let x = 0; x < pemain; x++) {
+                const object = {
+                    'data_dadu' : [],
+                    'data_evaluasi' : [],
+                    'poin' : 0,
+                    'history_poin' : [],
+                    'dadu' : dadu,
+                    'bagi_dadu' : 0
+                };
+                data.push(object)
+            }
+
+            play();
+        }
+
+        function lemparDadu() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        function play() {
+            data.forEach((item, idx) => {
+                let hasil_dadu = [];
+                for (let x = 0; x < item.dadu; x++) {
+                    hasil_dadu.push(lemparDadu()); 
+                }
+                const hasil_evaluasi = evaluasi(hasil_dadu)
+
+                item.data_dadu.push(hasil_dadu);
+                item.data_evaluasi.push(hasil_evaluasi[0]);
+                item.poin = item.poin + hasil_evaluasi[1];
+                item.history_poin.push(item.poin);
+                item.bagi_dadu = hasil_evaluasi[2];
+                checkDadu(idx);
+            });
+            bagiDadu();
+            acakLagi();
+        }
+
+        function evaluasi(data) {
+            let res = [];
+            let point = 0;
+            let bagiDadu = 0;
+            data.forEach(item => {
+                if (item === 1) {
+                    bagiDadu++;
+                } else if (item === 6) {
+                    point++;
+                } else {
+                    res.push(item)
+                }
+            });
+
+            return [res, point, bagiDadu];
+        }
+
+        function checkDadu(index) {
+            const target = data[index].data_evaluasi;
+            const dadu = target[target.length - 1].length;
+            data[index].dadu = dadu;
+        }
+
+        function bagiDadu() {
+            data.forEach((item, idx) => {
+                if (item.bagi_dadu > 0) {
+                    if (idx == data.length - 1) {
+                        const dataDaduTarget = data[0].dadu;
+                        const newDadu = dataDaduTarget + item.bagi_dadu;
+                        data[0].dadu = newDadu;
+
+                        for (let x = 0; x < item.bagi_dadu; x++) {
+                            data[0].data_evaluasi[data[0].data_evaluasi.length - 1].push(1);
+                        }
+                        
+                    } else {
+                        const dataDaduTarget = data[idx + 1].dadu;
+                        const newDadu = dataDaduTarget + item.bagi_dadu;
+                        data[idx + 1].dadu = newDadu;
+
+                        for (let x = 0; x < item.bagi_dadu; x++) {
+                            data[idx + 1].data_evaluasi[data[idx + 1].data_evaluasi.length - 1].push(1);
+                        }
+                    }
+                }
+                item.bagi_dadu = 0;
+            });
+        }
+
+        function acakLagi() {
+            let jumlahPemainAktif = 0;
+            data.forEach((item, idx) => {
+                item.dadu > 0 
+                    ? jumlahPemainAktif++
+                    : '';
+            })
+            jumlahPemainAktif > 1
+                ? play()
+                : printHasil();
+        }
+
+        function printHasil() {
+            const cekHasil = (x) => {
+                let html = '<ul>';
+                data.forEach((item, idx) => {
+                    html += `
+                        <li>Pemain #${idx + 1} (${x == 0 ? '0' : item.history_poin[x - 1]}): ${item.data_dadu[x].join(', ')}</li>
+                    `;
+                })
+                html += '</ul>';
+                return html;
+            }
+            const cekEvaluasi = (x) => {
+                let html = '<ul>';
+                data.forEach((item, idx) => {
+                    html += `
+                        <li>Pemain #${idx + 1} (${item.history_poin[x]}): ${item.data_evaluasi[x].join(', ')}</li>
+                    `;
+                })
+                html += '</ul>';
+                return html;
+            }
+
+            const totalPermainan = data[0].data_dadu.length;
+            let html = '';
+            for (let x = 0; x < totalPermainan; x++) {
+                html += `
+                    <div class="round">
+                        <div class="separator"></div>
+                        <b>Giliran ${x + 1} lempar dadu:</b>
+                        ${cekHasil(x)}
+                        <b>Setelah evaluasi:</b>
+                        ${cekEvaluasi(x)}
+                    </div>
+                `;
+            }
+            document.getElementById('result').innerHTML = html;
+
+            // Cari Pemenang
+            let dataPemenang = '';
+            let poinPemenang = 0;
+            data.forEach((item, idx) => {
+                if(item.poin > poinPemenang) {
+                    dataPemenang = idx;
+                    poinPemenang = item.poin;
+                }
+            })
+            document.getElementById('result-pemenang').innerHTML = `Game dimenangkan oleh pemain #${dataPemenang + 1} dengan poin <b>${poinPemenang}</b>`;
+        }
+    </script>
+</body>
+</html>
+
+
